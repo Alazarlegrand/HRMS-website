@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reports - SmartHR Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <style>
+    body { background: #0f172a; }
+    .card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+
+<body class="text-white flex">
+    <!-- GLOBAL TOP BAR -->
+<div class="flex justify-between items-center mb-6 card p-4 rounded-xl">
+
+  <h2 class="text-xl font-bold">⚡ NexaHR Dashboard</h2>
+
+  <div class="flex items-center gap-3">
+
+    <img id="globalUserImg"
+      class="w-10 h-10 rounded-full object-cover"
+      src="https://via.placeholder.com/40">
+
+    <div>
+      <p id="globalUserName"></p>
+      <p id="globalUserRole" class="text-gray-400 text-sm"></p>
+    </div>
+
+  </div>
+
+</div>
+
+  <!-- SIDEBAR -->
+  <div class="w-64 h-screen bg-gray-900 p-5 space-y-6">
+    <h1 class="text-2xl font-bold text-center">SmartHR</h1>
+
+    <nav class="space-y-4">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="employees.html">Employees</a>
+      <a href="attendance.html">Attendance</a>
+      <a href="payroll.html">Payroll</a>
+      <a href="#" class="text-blue-400">Reports</a>
+      <a href="index.html" class="text-red-400">Logout</a>
+    </nav>
+  </div>
+
+  <!-- MAIN -->
+  <div class="flex-1 p-6">
+
+    <h2 class="text-2xl font-bold mb-6">HR Reports & Analytics</h2>
+
+    <!-- CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+      <div class="card p-5 rounded-xl text-center">
+        <h3>Total Employees</h3>
+        <p id="totalEmp" class="text-3xl font-bold">0</p>
+      </div>
+
+      <div class="card p-5 rounded-xl text-center">
+        <h3>Present</h3>
+        <p id="present" class="text-3xl font-bold text-green-400">0</p>
+      </div>
+
+      <div class="card p-5 rounded-xl text-center">
+        <h3>Absent</h3>
+        <p id="absent" class="text-3xl font-bold text-red-400">0</p>
+      </div>
+
+      <div class="card p-5 rounded-xl text-center">
+        <h3>Total Payroll</h3>
+        <p id="payroll" class="text-3xl font-bold text-blue-400">0</p>
+      </div>
+
+    </div>
+
+    <!-- VISUAL SECTION -->
+    <div class="grid md:grid-cols-2 gap-6 mt-6">
+
+      <!-- SIMPLE CHART -->
+      <div class="card p-5 rounded-xl">
+        <h3 class="mb-4">Attendance Overview</h3>
+
+        <div class="space-y-3">
+
+          <div>
+            <p>Present</p>
+            <div id="barPresent" class="bg-green-500 h-4 rounded"></div>
+          </div>
+
+          <div>
+            <p>Absent</p>
+            <div id="barAbsent" class="bg-red-500 h-4 rounded"></div>
+          </div>
+
+          <div>
+            <p>Late</p>
+            <div id="barLate" class="bg-yellow-500 h-4 rounded"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ACTIVITY -->
+      <div class="card p-5 rounded-xl">
+        <h3 class="mb-4">System Activity</h3>
+
+        <ul class="space-y-2 text-sm text-gray-300">
+          <li>✔ Employees added via system</li>
+          <li>✔ Attendance updated in real-time</li>
+          <li>✔ Payroll calculated automatically</li>
+          <li>✔ Data stored using localStorage</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+
+    let employees = JSON.parse(localStorage.getItem("employees")) || [];
+
+    function calculate() {
+
+      let total = employees.length;
+
+      let present = employees.filter(e => e.status === "Present").length;
+      let absent = employees.filter(e => e.status === "Absent" || !e.status).length;
+      let late = employees.filter(e => e.status === "Late").length;
+
+      // Payroll estimate
+      let payrollTotal = 0;
+
+      employees.forEach(emp => {
+        let salary = emp.salary || 5000;
+        let bonus = emp.bonus || 0;
+        let deduction = emp.deduction || 0;
+        payrollTotal += salary + bonus - deduction;
+      });
+
+      // Update UI
+      document.getElementById("totalEmp").innerText = total;
+      document.getElementById("present").innerText = present;
+      document.getElementById("absent").innerText = absent;
+      document.getElementById("payroll").innerText = payrollTotal;
+
+      // Bars (visual scaling)
+      document.getElementById("barPresent").style.width = (present * 20) + "px";
+      document.getElementById("barAbsent").style.width = (absent * 20) + "px";
+      document.getElementById("barLate").style.width = (late * 20) + "px";
+    }
+
+    calculate();
+function updateProfile() {
+
+  let name = document.getElementById("adminName").value;
+  let file = document.getElementById("adminImage").files[0];
+
+  if (file) {
+    toBase64(file, (img) => {
+
+      system.superadmin.image = img;
+      if (name) system.superadmin.name = name;
+
+      /* 🔥 UPDATE CURRENT USER */
+      let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      currentUser.image = img;
+      if (name) currentUser.name = name;
+
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+      saveSystem();
+      alert("Profile updated!");
+    });
+  } else {
+
+    if (name) system.superadmin.name = name;
+
+    let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (name) currentUser.name = name;
+
+    localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+    saveSystem();
+    alert("Name updated!");
+  }
+}
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Employees - NexaHR</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  background:#0f172a;
+  color:white;
+  font-family: Arial;
+}
+
+.card {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(12px);
+}
+</style>
+</head>
+
+<body class="flex">
+
+<!-- SIDEBAR -->
+<div class="w-64 h-screen bg-gray-900 p-5 space-y-3">
+  <h1 class="text-xl font-bold mb-5">⚡ NexaHR</h1>
+
+  <a href="dashboard.html">Dashboard</a><br>
+  <a href="employees.html" class="text-blue-400">Employees</a><br>
+  <a href="attendance.html">Attendance</a><br>
+  <a href="payroll.html">Payroll</a><br>
+  <a href="about us.html">About as</a>
+</div>
+
+<!-- MAIN -->
+<div class="flex-1 p-6">
+
+<!-- TOP BAR -->
+<div class="flex justify-between items-center mb-6 card p-4 rounded-xl">
+
+  <h2 class="text-xl font-bold">👥 Employees</h2>
+
+  <div class="flex items-center gap-3">
+
+    <img id="userImg"
+      class="w-10 h-10 rounded-full object-cover"
+      src="https://via.placeholder.com/40">
+
+    <div>
+      <p id="userName"></p>
+      <p id="userRole" class="text-gray-400 text-sm"></p>
+    </div>
+
+  </div>
+
+</div>
+
+<h2 class="text-2xl font-bold mb-2">Employee Management</h2>
+<p id="roleInfo" class="text-gray-400 mb-4"></p>
+
+<!-- ADD FORM -->
+<div id="addSection" class="card p-4 rounded-xl mb-6">
+
+  <h3 class="mb-3 font-bold">Add Employee</h3>
+
+  <input id="name" placeholder="Full Name" class="w-full p-2 bg-gray-800 mb-2 rounded">
+  <input id="position" placeholder="Position" class="w-full p-2 bg-gray-800 mb-2 rounded">
+  <input id="dept" placeholder="Department" class="w-full p-2 bg-gray-800 mb-2 rounded">
+  <input id="email" placeholder="Email" class="w-full p-2 bg-gray-800 mb-2 rounded">
+  <input id="phone" placeholder="Phone" class="w-full p-2 bg-gray-800 mb-2 rounded">
+  <input id="date" type="date" class="w-full p-2 bg-gray-800 mb-2 rounded">
+  <input id="image" type="file" class="w-full p-2 bg-gray-800 mb-2 rounded">
+
+  <button onclick="addEmployee()" class="bg-blue-600 w-full p-2 rounded">
+    Add Employee
+  </button>
+
+</div>
+
+<!-- TABLE -->
+<div class="card p-4 rounded-xl overflow-auto">
+
+<table class="w-full text-left">
+
+<thead>
+<tr class="text-gray-400">
+  <th>Name</th>
+  <th>Department</th>
+  <th>Email</th>
+  <th>Phone</th>
+  <th>Join Date</th>
+  <th>Status</th>
+  <th>Action</th>
+</tr>
+</thead>
+
+<tbody id="table"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+/* ================= USER ================= */
+let user = JSON.parse(localStorage.getItem("currentUser"));
+
+if (!user) window.location.href = "index.html";
+
+document.getElementById("userName").innerText = user.name;
+document.getElementById("userRole").innerText = user.role;
+document.getElementById("roleInfo").innerText =
+"Logged in as: " + user.role.toUpperCase();
+
+if (user.image) {
+  document.getElementById("userImg").src = user.image;
+}
+
+const isAdmin = user.role === "admin" || user.role === "superadmin";
+
+/* ================= EMPLOYEES ================= */
+let employees = JSON.parse(localStorage.getItem("employees") || "[]");
+
+/* ================= HIDE ADD FORM ================= */
+if (!isAdmin) {
+  document.getElementById("addSection").style.display = "none";
+}
+
+/* ================= SAVE ================= */
+function save() {
+  localStorage.setItem("employees", JSON.stringify(employees));
+}
+
+/* ================= IMAGE CONVERT ================= */
+function toBase64(file, callback) {
+  let reader = new FileReader();
+  reader.onload = () => callback(reader.result);
+  reader.readAsDataURL(file);
+}
+
+/* ================= ADD EMPLOYEE ================= */
+function addEmployee() {
+
+  if (!isAdmin) return;
+
+  let file = document.getElementById("image").files[0];
+
+  function push(img) {
+    employees.push({
+      name: document.getElementById("name").value,
+      position: document.getElementById("position").value,
+      department: document.getElementById("dept").value,
+      email: document.getElementById("email").value,
+      phone: document.getElementById("phone").value,
+      joinDate: document.getElementById("date").value,
+      status: "Active",
+      image: img || ""
+    });
+
+    save();
+    render();
+  }
+
+  if (file) toBase64(file, push);
+  else push("");
+}
+
+/* ================= DELETE ================= */
+function remove(i) {
+  if (!isAdmin) return;
+
+  employees.splice(i, 1);
+  save();
+  render();
+}
+
+/* ================= RENDER ================= */
+function render() {
+
+  let table = document.getElementById("table");
+  table.innerHTML = "";
+
+  if (employees.length === 0) {
+    table.innerHTML = "<tr><td colspan='7'>No employees found</td></tr>";
+    return;
+  }
+
+  employees.forEach((e, i) => {
+
+    table.innerHTML += `
+      <tr class="border-t border-gray-700">
+
+        <td class="flex items-center gap-3">
+          <img src="${e.image || 'https://via.placeholder.com/40'}"
+               class="w-10 h-10 rounded-full object-cover">
+
+          <div>
+            <p>${e.name}</p>
+            <p class="text-gray-400 text-sm">${e.position}</p>
+          </div>
+        </td>
+
+        <td>${e.department}</td>
+        <td>${e.email}</td>
+        <td>${e.phone}</td>
+        <td>${e.joinDate || "-"}</td>
+
+        <td class="text-green-400">${e.status}</td>
+
+        <td>
+          ${isAdmin ? `
+            <button onclick="remove(${i})" class="bg-red-600 px-2 py-1 rounded">
+              Delete
+            </button>
+          ` : "View Only"}
+        </td>
+
+      </tr>
+    `;
+  });
+}
+
+render();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NexaHR Home</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  background: radial-gradient(circle at top, #1e293b, #020617);
+  color: white;
+  font-family: "Segoe UI", sans-serif;
+  overflow-x: hidden;
+}
+
+/* floating particles */
+.particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #3b82f6;
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: float 10s linear infinite;
+}
+
+@keyframes float {
+  from { transform: translateY(100vh); }
+  to { transform: translateY(-10vh); }
+}
+
+/* card */
+.card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  background: rgba(255,255,255,0.08);
+}
+
+/* button */
+.btn {
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
+</style>
+</head>
+
+<body class="relative">
+
+<!-- particles -->
+<script>
+for (let i = 0; i < 25; i++) {
+  let p = document.createElement("div");
+  p.className = "particle";
+  p.style.left = Math.random() * 100 + "vw";
+  p.style.animationDuration = (5 + Math.random() * 10) + "s";
+  document.body.appendChild(p);
+}
+</script>
+
+<!-- HERO -->
+<div class="text-center pt-20 px-4">
+
+  <h1 class="text-5xl font-bold mb-4">⚡ NexaHR</h1>
+
+  <p class="text-gray-300 max-w-3xl mx-auto">
+    NexaHR is a modern, role-based Human Resource Management System designed to streamline
+    how organizations handle employees, attendance, payroll, and internal administration.
+    It provides a structured workflow where Super Admins manage everything, Admins handle operations,
+    and Users access controlled information in a secure environment.
+  </p>
+
+  <p class="text-gray-400 max-w-2xl mx-auto mt-3 text-sm">
+    Built to replace manual HR processes with a fast, centralized, and intelligent digital system.
+  </p>
+
+  <div class="mt-8 flex justify-center gap-4">
+
+    <a href="index.html"
+       class="btn bg-blue-600 hover:bg-blue-700">
+       🔐 Login
+    </a>
+
+    <a href="sign up.html"
+       class="btn bg-gray-700 hover:bg-gray-600">
+       🆕 Sign Up 
+    </a>
+
+  </div>
+</div>
+
+<!-- FEATURES -->
+<div class="grid md:grid-cols-3 gap-6 px-10 mt-16">
+
+  <div class="card p-6">
+    <h3 class="text-xl font-bold mb-2">👥 Employee Management</h3>
+    <p class="text-gray-300">
+      Create, update, and organize employee profiles including personal details, job roles,
+      departments, contact information, and profile images. Ensures centralized workforce control.
+    </p>
+  </div>
+
+  <div class="card p-6">
+    <h3 class="text-xl font-bold mb-2">📅 Attendance Tracking</h3>
+    <p class="text-gray-300">
+      Monitor daily employee attendance with real-time status updates such as Present, Absent,
+      and Late, along with time stamping for accurate workforce tracking.
+    </p>
+  </div>
+
+  <div class="card p-6">
+    <h3 class="text-xl font-bold mb-2">💰 Payroll System</h3>
+    <p class="text-gray-300">
+      Automatically calculate employee salaries including base pay, bonuses, and deductions,
+      ensuring accurate and transparent payroll management.
+    </p>
+  </div>
+
+  <div class="card p-6">
+    <h3 class="text-xl font-bold mb-2">📊 Analytics Dashboard</h3>
+    <p class="text-gray-300">
+      Provides visual insights into workforce data including attendance statistics,
+      payroll summaries, and overall organizational performance.
+    </p>
+  </div>
+
+  <div class="card p-6">
+    <h3 class="text-xl font-bold mb-2">🔐 Role-Based Access Control</h3>
+    <p class="text-gray-300">
+      Secure multi-level access system with Super Admin, Admin, and User roles.
+      Each role has specific permissions to protect system integrity and data security.
+    </p>
+  </div>
+
+  <div class="card p-6">
+    <h3 class="text-xl font-bold mb-2">⚙️ System Administration</h3>
+    <p class="text-gray-300">
+      Super Admins have full control over system settings, user roles, and organizational data,
+      ensuring complete administrative authority over the platform.
+    </p>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="text-center mt-20 mb-10 px-4">
+
+  <h2 class="text-2xl font-bold">About NexaHR System</h2>
+
+  <p class="text-gray-400 max-w-3xl mx-auto mt-2">
+    NexaHR is built to modernize HR operations by integrating automation, structure, and simplicity.
+    It eliminates manual HR tasks and replaces them with a unified digital system that improves efficiency,
+    reduces errors, and enhances decision-making across organizations.
+  </p>
+
+  <p class="text-gray-400 max-w-2xl mx-auto mt-3">
+    From employee management to payroll and attendance tracking, NexaHR delivers a complete workforce
+    management solution designed for scalability and real-world business use.
+  </p>
+
+  <p class="text-gray-500 mt-6 text-sm">
+    © 2026 NexaHR System. Designed for intelligent workforce management.
+  </p>
+
+</div>
+
+</body>
+</html>

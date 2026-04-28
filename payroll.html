@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NexaHR Payroll</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  background: #0f172a;
+  color: white;
+  font-family: Arial;
+}
+
+.card {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+</style>
+</head>
+
+<body class="flex">
+
+<!-- SIDEBAR -->
+<div class="w-64 h-screen bg-gray-900 p-5 space-y-3">
+  <h1 class="text-xl font-bold mb-5">⚡ NexaHR</h1>
+
+  <a href="dashboard.html">Dashboard</a><br>
+  <a href="employees.html">Employees</a><br>
+  <a href="attendance.html">Attendance</a><br>
+  <a href="payroll.html" class="text-blue-400">Payroll</a><br>
+  <a href="about us.html">About as</a>
+</div>
+
+<!-- MAIN -->
+<div class="flex-1 p-6">
+
+<!-- TOP BAR -->
+<div class="flex justify-between items-center mb-6 card p-4 rounded-xl">
+
+  <div>
+    <h2 class="text-2xl font-bold">💰 Payroll System</h2>
+    <p class="text-gray-400 text-sm">Salary management & compensation control</p>
+  </div>
+
+  <!-- USER PROFILE -->
+  <div class="flex items-center gap-3">
+    <img id="userImg"
+      class="w-10 h-10 rounded-full object-cover"
+      src="https://via.placeholder.com/40">
+
+    <div>
+      <p id="userName"></p>
+      <p id="userRole" class="text-gray-400 text-sm"></p>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUMMARY -->
+<div class="grid md:grid-cols-4 gap-4 mb-6">
+
+  <div class="card p-4 rounded-xl">
+    <p>Total Employees</p>
+    <h2 id="totalEmp" class="text-2xl font-bold">0</h2>
+  </div>
+
+  <div class="card p-4 rounded-xl">
+    <p>Total Payroll</p>
+    <h2 id="totalPayroll" class="text-2xl font-bold text-blue-400">0</h2>
+  </div>
+
+  <div class="card p-4 rounded-xl">
+    <p>Total Bonus</p>
+    <h2 id="totalBonus" class="text-2xl font-bold text-green-400">0</h2>
+  </div>
+
+  <div class="card p-4 rounded-xl">
+    <p>Total Deduction</p>
+    <h2 id="totalDeduction" class="text-2xl font-bold text-red-400">0</h2>
+  </div>
+
+</div>
+
+<!-- TABLE -->
+<div class="card p-4 rounded-xl overflow-auto">
+
+<table class="w-full text-left">
+
+<thead>
+<tr class="text-gray-400">
+  <th>Employee</th>
+  <th>Base</th>
+  <th>Bonus</th>
+  <th>Deduction</th>
+  <th>Net Salary</th>
+  <th>Action</th>
+</tr>
+</thead>
+
+<tbody id="table"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- EDIT MODAL -->
+<div id="modal"
+class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+
+  <div class="card p-6 rounded-xl w-[350px]">
+
+    <h2 class="text-xl font-bold mb-4">Edit Payroll</h2>
+
+    <input id="base" placeholder="Base Salary"
+      class="w-full p-2 mb-2 bg-gray-800 rounded">
+
+    <input id="bonus" placeholder="Bonus"
+      class="w-full p-2 mb-2 bg-gray-800 rounded">
+
+    <input id="deduction" placeholder="Deduction"
+      class="w-full p-2 mb-4 bg-gray-800 rounded">
+
+    <div class="flex gap-2">
+      <button onclick="saveEdit()"
+        class="bg-green-600 w-full p-2 rounded">
+        Save
+      </button>
+
+      <button onclick="closeModal()"
+        class="bg-red-600 w-full p-2 rounded">
+        Cancel
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+/* ================= USER ================= */
+let user = JSON.parse(localStorage.getItem("currentUser"));
+if (!user) window.location.href = "index.html";
+
+document.getElementById("userName").innerText = user.name;
+document.getElementById("userRole").innerText = user.role;
+
+if (user.image) {
+  document.getElementById("userImg").src = user.image;
+}
+
+const isAdmin = user.role === "admin" || user.role === "superadmin";
+
+/* ================= DATA ================= */
+let employees = JSON.parse(localStorage.getItem("employees") || "[]");
+
+function save() {
+  localStorage.setItem("employees", JSON.stringify(employees));
+}
+
+/* ================= NET SALARY ================= */
+function net(e) {
+  return (e.salary || 1000) + (e.bonus || 0) - (e.deduction || 0);
+}
+
+/* ================= MODAL CONTROL ================= */
+let currentIndex = null;
+
+function openModal(i) {
+  if (!isAdmin) return;
+
+  currentIndex = i;
+
+  document.getElementById("base").value = employees[i].salary || 1000;
+  document.getElementById("bonus").value = employees[i].bonus || 0;
+  document.getElementById("deduction").value = employees[i].deduction || 0;
+
+  document.getElementById("modal").classList.remove("hidden");
+}
+
+function closeModal() {
+  document.getElementById("modal").classList.add("hidden");
+}
+
+/* ================= SAVE EDIT ================= */
+function saveEdit() {
+
+  employees[currentIndex].salary = Number(document.getElementById("base").value);
+  employees[currentIndex].bonus = Number(document.getElementById("bonus").value);
+  employees[currentIndex].deduction = Number(document.getElementById("deduction").value);
+
+  save();
+  closeModal();
+  render();
+}
+
+/* ================= RENDER ================= */
+function render() {
+
+  let table = document.getElementById("table");
+  table.innerHTML = "";
+
+  let totalPayroll = 0;
+  let totalBonus = 0;
+  let totalDeduction = 0;
+
+  employees.forEach((e, i) => {
+
+    let netSalary = net(e);
+
+    totalPayroll += netSalary;
+    totalBonus += e.bonus || 0;
+    totalDeduction += e.deduction || 0;
+
+    table.innerHTML += `
+      <tr class="border-t border-gray-700">
+
+        <td class="flex items-center gap-3">
+          <img src="${e.image || 'https://via.placeholder.com/40'}"
+            class="w-10 h-10 rounded-full object-cover">
+
+          <div>
+            <p>${e.name}</p>
+            <p class="text-gray-400 text-sm">${e.position || ""}</p>
+          </div>
+        </td>
+
+        <td>$${e.salary || 1000}</td>
+        <td class="text-green-400">$${e.bonus || 0}</td>
+        <td class="text-red-400">$${e.deduction || 0}</td>
+        <td class="text-blue-400 font-bold">$${netSalary}</td>
+
+        <td>
+          ${isAdmin ? `
+            <button onclick="openModal(${i})"
+              class="bg-blue-600 px-3 py-1 rounded">
+              Edit
+            </button>
+          ` : `<span class="text-gray-400">View Only</span>`}
+        </td>
+
+      </tr>
+    `;
+  });
+
+  document.getElementById("totalEmp").innerText = employees.length;
+  document.getElementById("totalPayroll").innerText = "$" + totalPayroll;
+  document.getElementById("totalBonus").innerText = "$" + totalBonus;
+  document.getElementById("totalDeduction").innerText = "$" + totalDeduction;
+}
+
+render();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NexaHR Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  background: radial-gradient(circle at top, #1e293b, #020617);
+  font-family: "Segoe UI", sans-serif;
+  color: white;
+  overflow: hidden;
+}
+
+/* PARTICLES */
+.particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #3b82f6;
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: float linear infinite;
+}
+
+@keyframes float {
+  from { transform: translateY(100vh); }
+  to { transform: translateY(-10vh); }
+}
+
+/* CARD */
+.card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  border-radius: 20px;
+}
+
+/* INPUT */
+.input-group input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(15,23,42,0.8);
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: 0.3s;
+}
+
+.input-group input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 12px rgba(59,130,246,0.4);
+  transform: scale(1.02);
+}
+
+/* BUTTON */
+.login-btn {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.login-btn:hover {
+  transform: scale(1.05);
+}
+
+/* LOADER */
+.loader {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255,255,255,0.1);
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* FOOTER */
+.footer {
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* shake */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+.shake {
+  animation: shake 0.3s;
+}
+</style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen">
+
+<!-- PARTICLES -->
+<script>
+for (let i = 0; i < 25; i++) {
+  let p = document.createElement("div");
+  p.className = "particle";
+  p.style.left = Math.random() * 100 + "vw";
+  p.style.animationDuration = (5 + Math.random() * 10) + "s";
+  document.body.appendChild(p);
+}
+</script>
+
+<!-- LOGIN CARD -->
+<div id="card" class="card w-[420px] p-8">
+
+  <div class="text-3xl text-center mb-2">⚡ NexaHR</div>
+  <p class="text-center text-gray-400 mb-6">Smart HR Management System</p>
+
+  <div class="space-y-3">
+
+    <div class="input-group">
+      <input id="name" placeholder="👤 Enter your name">
+    </div>
+
+    <div class="input-group">
+      <input id="password" type="password" placeholder="🔒 Password">
+    </div>
+
+    <div class="input-group">
+      <input id="key" placeholder="🔑 Admin Key (optional)">
+    </div>
+
+  </div>
+
+  <div class="flex items-center gap-2 mt-3 text-sm">
+    <input type="checkbox" id="remember">
+    <label for="remember">Remember Me</label>
+  </div>
+
+  <button onclick="login()" class="login-btn w-full mt-5">
+    🚀 Login to Dashboard
+  </button>
+
+  <!-- EXTRA PROFESSIONAL LINKS -->
+  <div class="text-center mt-4 text-sm text-gray-400 space-y-1">
+    <p>
+      <a href="#" class="text-blue-400 hover:underline">Forgot Password?</a>
+    </p>
+    <p>Need help? Contact IT Support</p>
+  </div>
+
+  <p id="msg" class="text-center mt-3 text-sm"></p>
+
+</div>
+
+<!-- WELCOME LOADER -->
+<div id="loader" class="hidden fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md z-50">
+  <div class="text-center space-y-4">
+    <h1 id="welcomeText" class="text-2xl font-bold text-blue-400"></h1>
+    <p id="welcomeRole" class="text-gray-300 text-sm"></p>
+    <div class="loader mx-auto"></div>
+    <p class="text-gray-400 text-sm">Preparing your dashboard...</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  © 2026 NexaHR System • Secure HR Management Platform • Version 1.0.0 • All rights reserved
+</div>
+
+<script>
+
+/* INIT SYSTEM */
+if (!localStorage.getItem("system")) {
+  localStorage.setItem("system", JSON.stringify({
+    superadmin: {
+      name: "Super Admin",
+      password: "1234",
+      key: "MASTER123",
+      image: ""
+    },
+    admins: [
+      {
+        name: "Admin One",
+        password: "1111",
+        key: "ADMIN123",
+        image: ""
+      }
+    ],
+    users: []
+  }));
+}
+
+/* LOGIN */
+function login() {
+
+  const name = document.getElementById("name").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const key = document.getElementById("key").value.trim();
+  const remember = document.getElementById("remember").checked;
+
+  const system = JSON.parse(localStorage.getItem("system"));
+
+  if (remember) {
+    localStorage.setItem("rememberUser", JSON.stringify({ name, password }));
+  }
+
+  if (
+    name === system.superadmin.name &&
+    password === system.superadmin.password &&
+    key === system.superadmin.key
+  ) {
+    setUser(name, "superadmin", system.superadmin.image);
+    return;
+  }
+
+  const admin = system.admins.find(a =>
+    name === a.name &&
+    password === a.password &&
+    key === a.key
+  );
+
+  if (admin) {
+    setUser(admin.name, "admin", admin.image);
+    return;
+  }
+
+  if (name && password) {
+    setUser(name, "user", "");
+    return;
+  }
+
+  document.getElementById("msg").innerText = "❌ Invalid credentials";
+
+  document.getElementById("card").classList.add("shake");
+  setTimeout(() => document.getElementById("card").classList.remove("shake"), 300);
+}
+
+/* SET USER */
+function setUser(name, role, image) {
+
+  localStorage.setItem("currentUser", JSON.stringify({ name, role, image: image || "" }));
+
+  const loader = document.getElementById("loader");
+
+  const roleMap = {
+    superadmin: "👑 Super Admin",
+    admin: "🛠 Admin",
+    user: "👤 User"
+  };
+
+  document.getElementById("welcomeText").innerText = "👋 Welcome, " + name;
+  document.getElementById("welcomeRole").innerText = roleMap[role];
+
+  loader.classList.remove("hidden");
+
+  setTimeout(() => {
+    window.location.href = "dashboard.html";
+  }, 1800);
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartHR Pro - Auth</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen text-white">
+
+  <div class="glass w-[400px] p-8 rounded-2xl shadow-2xl">
+
+    <!-- Title -->
+    <h2 class="text-3xl font-bold text-center mb-6">SmartHR Pro</h2>
+
+    <!-- Toggle Buttons -->
+    <div class="flex mb-6 bg-gray-800 rounded-lg overflow-hidden">
+      <button id="loginBtn" class="w-1/2 py-2 bg-blue-600">Login</button>
+      <button id="registerBtn" class="w-1/2 py-2">Register</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form id="loginForm" class="space-y-4">
+
+      <input type="email" placeholder="Email"
+        class="w-full p-3 rounded bg-gray-900 outline-none focus:ring-2 focus:ring-blue-500"/>
+
+      <div class="relative">
+        <input id="loginPassword" type="password" placeholder="Password"
+          class="w-full p-3 rounded bg-gray-900 outline-none focus:ring-2 focus:ring-blue-500"/>
+
+        <i onclick="togglePassword('loginPassword')" 
+           class="fa fa-eye absolute right-3 top-4 cursor-pointer"></i>
+      </div>
+
+      <button class="w-full bg-blue-600 py-3 rounded hover:bg-blue-700 transition">
+        Login
+      </button>
+
+    </form>
+
+    <!-- REGISTER FORM -->
+    <form id="registerForm" class="space-y-4 hidden">
+
+      <input type="text" placeholder="Full Name"
+        class="w-full p-3 rounded bg-gray-900 outline-none focus:ring-2 focus:ring-blue-500"/>
+
+      <input type="email" placeholder="Email"
+        class="w-full p-3 rounded bg-gray-900 outline-none focus:ring-2 focus:ring-blue-500"/>
+
+      <div class="relative">
+        <input id="registerPassword" type="password" placeholder="Password"
+          class="w-full p-3 rounded bg-gray-900 outline-none focus:ring-2 focus:ring-blue-500"/>
+
+        <i onclick="togglePassword('registerPassword')" 
+           class="fa fa-eye absolute right-3 top-4 cursor-pointer"></i>
+      </div>
+
+      <button class="w-full bg-green-600 py-3 rounded hover:bg-green-700 transition">
+        Register
+      </button>
+
+    </form>
+
+    <!-- Message -->
+    <p id="message" class="text-center mt-4 text-sm"></p>
+
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+  const loginBtn = document.getElementById("loginBtn");
+  const registerBtn = document.getElementById("registerBtn");
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+  const message = document.getElementById("message");
+
+  // Toggle Forms
+  loginBtn.onclick = () => {
+    loginForm.classList.remove("hidden");
+    registerForm.classList.add("hidden");
+
+    loginBtn.classList.add("bg-blue-600");
+    registerBtn.classList.remove("bg-blue-600");
+
+    message.textContent = "";
+    message.className = "text-center mt-4 text-sm";
+  };
+
+  registerBtn.onclick = () => {
+    registerForm.classList.remove("hidden");
+    loginForm.classList.add("hidden");
+
+    registerBtn.classList.add("bg-blue-600");
+    loginBtn.classList.remove("bg-blue-600");
+
+    message.textContent = "";
+    message.className = "text-center mt-4 text-sm";
+  };
+
+  // Toggle Password
+  function togglePassword(id) {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
+  }
+
+  // LOGIN
+  loginForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const email = loginForm.querySelector("input[type='email']").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+
+    if (email === "" || password === "") {
+      message.textContent = "Please fill all fields!";
+      message.classList.add("text-red-500");
+      return;
+    }
+
+    message.textContent = "Logging in...";
+    message.classList.remove("text-red-500");
+
+    setTimeout(() => {
+      localStorage.setItem("loggedIn", "true");
+
+      // ✅ FIXED REDIRECT
+      window.location.href = "dashboard.html";
+    }, 1000);
+  });
+
+  // REGISTER
+  registerForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    message.textContent = "Account created successfully!";
+    message.classList.remove("text-red-500");
+    message.classList.add("text-green-400");
+  });
+  </script>
+
+</body>
+</html>

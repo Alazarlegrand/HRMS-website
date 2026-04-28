@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Settings - NexaHR</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  background: radial-gradient(circle at top, #0b1220, #020617);
+  color: white;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* CARD */
+.card {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+/* INPUTS */
+input, select {
+  width: 100%;
+  padding: 14px 16px;
+  margin-top: 10px;
+  border-radius: 12px;
+  background: rgba(15,23,42,0.9);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: white;
+  font-size: 15px;
+  outline: none;
+  transition: 0.2s;
+}
+
+input:focus, select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+}
+
+/* BUTTONS */
+button {
+  border-radius: 12px;
+  font-weight: 700;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  padding: 14px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+}
+
+td {
+  padding: 16px 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* SIDEBAR MATCHING OTHER PAGES */
+.sidebar-link {
+  display: block;
+  color: white;
+  margin-bottom: 10px;
+  transition: 0.2s;
+}
+
+.sidebar-link:hover {
+  color: #60a5fa;
+}
+
+.small-btn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+</style>
+</head>
+
+<body class="flex">
+
+<!-- SIDEBAR -->
+<div class="w-64 h-screen bg-gray-900 p-5 space-y-3">
+  <h1 class="text-xl font-bold mb-5">⚡ NexaHR</h1>
+
+  <a href="dashboard.html" class="sidebar-link">Dashboard</a><br>
+  <a href="employees.html" class="sidebar-link">Employees</a><br>
+  <a href="attendance.html" class="sidebar-link">Attendance</a><br>
+  <a href="payroll.html" class="sidebar-link">Payroll</a><br>
+  <a href="reports.html" class="sidebar-link">About as</a><br>
+  <a href="settings.html" class="text-blue-400 sidebar-link">Settings</a>
+</div>
+
+<!-- MAIN -->
+<div class="flex-1 p-6">
+
+  <!-- TOP BAR -->
+  <div class="flex justify-between items-center mb-6 card">
+    <h2 class="text-xl font-bold">⚙️ Settings Panel</h2>
+
+    <div class="flex items-center gap-3">
+      <img id="userImg" class="w-12 h-12 rounded-full object-cover" src="https://via.placeholder.com/40">
+      <div>
+        <p id="userName"></p>
+        <p id="userRole" class="text-gray-400 text-sm"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="card mb-6">
+    <div class="section-title">👑 Super Admin Profile</div>
+
+    <input id="adminName" placeholder="Change Name">
+    <input id="adminImage" type="file">
+
+    <button onclick="updateProfile()" class="w-full mt-3 bg-blue-600 px-4 py-3">
+      Update Profile
+    </button>
+  </div>
+
+  <!-- ADMINS -->
+  <div class="card mb-6">
+    <div class="section-title">👨‍💼 Manage Admins</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Role</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="table"></tbody>
+    </table>
+  </div>
+
+  <!-- DEPARTMENTS -->
+  <div class="card">
+    <div class="section-title">🏢 Departments & Positions</div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+
+      <!-- LEFT PANEL -->
+      <div>
+        <input id="deptName" placeholder="New Department">
+        <button onclick="addDepartment()" class="w-full mt-3 bg-blue-600 px-4 py-3">
+          Add Department
+        </button>
+
+        <select id="deptSelect" class="mt-4"></select>
+
+        <input id="positionName" placeholder="New Position">
+
+        <button onclick="addPosition()" class="w-full mt-3 bg-green-600 px-4 py-3">
+          Add Position
+        </button>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div>
+        <div id="structureView" class="text-sm text-gray-300"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+/* USER */
+let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+if (!currentUser || currentUser.role !== "superadmin") {
+  alert("Access Denied!");
+  window.location.href = "dashboard.html";
+}
+
+/* SYSTEM */
+let system = JSON.parse(localStorage.getItem("system")) || { superadmin: {}, admins: [] };
+let employees = JSON.parse(localStorage.getItem("employees") || "[]");
+
+let structure = JSON.parse(localStorage.getItem("companyStructure")) || {
+  departments: []
+};
+
+/* DISPLAY USER */
+document.getElementById("userName").innerText = currentUser.name;
+document.getElementById("userRole").innerText = currentUser.role;
+
+if (system.superadmin && system.superadmin.image) {
+  document.getElementById("userImg").src = system.superadmin.image;
+}
+
+/* SAVE STRUCTURE */
+function saveStructure() {
+  localStorage.setItem("companyStructure", JSON.stringify(structure));
+  loadDepartments();
+  renderStructure();
+}
+
+/* UPDATE PROFILE */
+function updateProfile() {
+  let name = document.getElementById("adminName").value;
+  let file = document.getElementById("adminImage").files[0];
+
+  function save(img) {
+    if (img) system.superadmin.image = img;
+    if (name) system.superadmin.name = name;
+
+    localStorage.setItem("system", JSON.stringify(system));
+
+    currentUser.name = system.superadmin.name;
+    currentUser.image = system.superadmin.image || "";
+    localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+    location.reload();
+  }
+
+  if (file) {
+    let r = new FileReader();
+    r.onload = () => save(r.result);
+    r.readAsDataURL(file);
+  } else {
+    save();
+  }
+}
+
+/* ADMINS */
+function isAdmin(name) {
+  return system.admins.some(a => a.name === name);
+}
+
+function makeAdmin(emp) {
+  if (isAdmin(emp.name)) return;
+
+  system.admins.push({
+    name: emp.name,
+    password: "1111",
+    key: "ADMIN123"
+  });
+
+  localStorage.setItem("system", JSON.stringify(system));
+  render();
+}
+
+function removeAdmin(name) {
+  system.admins = system.admins.filter(a => a.name !== name);
+  localStorage.setItem("system", JSON.stringify(system));
+  render();
+}
+
+/* RENDER ADMINS */
+function render() {
+  let t = document.getElementById("table");
+  t.innerHTML = "";
+
+  if (!employees.length) {
+    t.innerHTML = `<tr><td colspan="3" class="text-gray-400">No employees found</td></tr>`;
+    return;
+  }
+
+  employees.forEach(emp => {
+    let admin = isAdmin(emp.name);
+
+    t.innerHTML += `
+      <tr>
+        <td>${emp.name}</td>
+        <td>${admin ? "Admin" : "Employee"}</td>
+        <td>
+          ${
+            admin
+              ? `<button class="bg-red-600 small-btn" onclick="removeAdmin('${emp.name}')">Remove</button>`
+              : `<button class="bg-green-600 small-btn" onclick='makeAdmin(${JSON.stringify(emp)})'>Make</button>`
+          }
+        </td>
+      </tr>
+    `;
+  });
+}
+
+/* DEPARTMENTS */
+function addDepartment() {
+  let name = document.getElementById("deptName").value.trim();
+  if (!name) return;
+
+  structure.departments.push({ name, positions: [] });
+  saveStructure();
+  document.getElementById("deptName").value = "";
+}
+
+function addPosition() {
+  let i = document.getElementById("deptSelect").value;
+  let pos = document.getElementById("positionName").value.trim();
+
+  if (!pos) return;
+  if (!structure.departments.length) return;
+
+  structure.departments[i].positions.push(pos);
+  saveStructure();
+  document.getElementById("positionName").value = "";
+}
+
+function deleteDept(i) {
+  structure.departments.splice(i, 1);
+  saveStructure();
+}
+
+function deletePos(d, p) {
+  structure.departments[d].positions.splice(p, 1);
+  saveStructure();
+}
+
+/* LOAD DEPTS */
+function loadDepartments() {
+  let sel = document.getElementById("deptSelect");
+  sel.innerHTML = "";
+
+  if (!structure.departments.length) {
+    sel.innerHTML = `<option>No departments yet</option>`;
+    return;
+  }
+
+  structure.departments.forEach((d, i) => {
+    sel.innerHTML += `<option value="${i}">${d.name}</option>`;
+  });
+}
+
+/* STRUCTURE VIEW */
+function renderStructure() {
+  let box = document.getElementById("structureView");
+  box.innerHTML = "<h4 class='font-bold mb-3 text-white'>Live Structure</h4>";
+
+  if (!structure.departments.length) {
+    box.innerHTML += `<p class="text-gray-400">No departments added yet.</p>`;
+    return;
+  }
+
+  structure.departments.forEach((d, i) => {
+    box.innerHTML += `
+      <div class="mb-4 p-3 rounded-xl bg-white/5 border border-white/10">
+        <div class="flex justify-between items-center mb-2">
+          <b>📁 ${d.name}</b>
+          <button onclick="deleteDept(${i})" class="text-red-400 text-xs">Delete Department</button>
+        </div>
+    `;
+
+    if (!d.positions.length) {
+      box.innerHTML += `<p class="ml-4 text-gray-400 text-sm">No positions yet</p>`;
+    }
+
+    d.positions.forEach((p, j) => {
+      box.innerHTML += `
+        <div class="flex justify-between ml-4 py-1">
+          <span>• ${p}</span>
+          <button onclick="deletePos(${i},${j})" class="text-red-400 text-xs">Delete</button>
+        </div>
+      `;
+    });
+
+    box.innerHTML += `</div>`;
+  });
+}
+
+/* INIT */
+loadDepartments();
+renderStructure();
+render();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Attendance System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  background: #0f172a;
+  color: white;
+}
+
+.card {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+</style>
+</head>
+
+<body class="flex">
+
+<!-- SIDEBAR -->
+<div class="w-64 h-screen bg-gray-900 p-5 space-y-3">
+  <h1 class="text-xl font-bold mb-5">⚡ NexaHR</h1>
+
+  <a href="dashboard.html">Dashboard</a><br>
+  <a href="employees.html">Employees</a><br>
+  <a href="attendance.html" class="text-blue-400">Attendance</a><br>
+  <a href="payroll.html">Payroll</a><br>
+  <a href="about us.html">About as</a>
+</div>
+
+<!-- MAIN -->
+<div class="flex-1 p-6">
+    
+
+  <h2 class="text-2xl font-bold mb-2">📅 Attendance Control</h2>
+
+  <p id="roleInfo" class="text-gray-400 mb-4"></p>
+<!-- USER PROFILE BAR -->
+<div class="flex justify-between items-center mb-6 card p-4 rounded-xl">
+
+  <div>
+    <h2 class="text-xl font-bold">📅 Attendance System</h2>
+    <p id="roleInfo" class="text-gray-400"></p>
+  </div>
+
+  <div class="flex items-center gap-3">
+
+    <img id="userImg"
+      class="w-10 h-10 rounded-full object-cover"
+      src="https://via.placeholder.com/40">
+
+    <div>
+      <p id="userName"></p>
+      <p id="userRole" class="text-gray-400 text-sm"></p>
+    </div>
+
+  </div>
+
+</div>
+  <!-- TABLE -->
+  <div class="card p-4 rounded-xl">
+
+    <table class="w-full text-left">
+      <thead>
+        <tr class="text-gray-400">
+          <th>Name</th>
+          <th>Status</th>
+          <th>Time</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody id="table"></tbody>
+    </table>
+
+  </div>
+
+</div>
+
+<script>
+    
+/* =========================
+   LOAD USER (ONLY ONCE)
+========================= */
+
+let user = JSON.parse(localStorage.getItem("currentUser"));
+
+if (!user) {
+  window.location.href = "index.html";
+}
+
+/* =========================
+   DISPLAY USER INFO
+========================= */
+
+document.getElementById("roleInfo").innerText =
+"Logged in as: " + user.role.toUpperCase();
+
+document.getElementById("userName").innerText = user.name;
+document.getElementById("userRole").innerText = user.role;
+
+/* USER IMAGE */
+if (user.image) {
+  document.getElementById("userImg").src = user.image;
+}
+
+/* =========================
+   ROLE CHECK
+========================= */
+
+const isAdmin = user.role === "admin" || user.role === "superadmin";
+
+/* =========================
+   LOAD EMPLOYEES
+========================= */
+
+let employees = JSON.parse(localStorage.getItem("employees") || "[]");
+
+/* =========================
+   SAVE
+========================= */
+
+function save() {
+  localStorage.setItem("employees", JSON.stringify(employees));
+}
+
+/* =========================
+   RENDER TABLE (FIXED + IMAGE)
+========================= */
+
+function render() {
+
+  let table = document.getElementById("table");
+  table.innerHTML = "";
+
+  if (!employees.length) {
+    table.innerHTML = "<tr><td colspan='4'>No employees found</td></tr>";
+    return;
+  }
+
+  employees.forEach((emp, i) => {
+
+    table.innerHTML += `
+      <tr class="border-t border-gray-700">
+
+        <td class="flex items-center gap-3">
+
+          <img src="${emp.image || 'https://via.placeholder.com/40'}"
+               class="w-10 h-10 rounded-full object-cover">
+
+          <div>
+            <p>${emp.name}</p>
+            <p class="text-gray-400 text-sm">${emp.position || ''}</p>
+          </div>
+
+        </td>
+
+        <td class="
+          ${emp.status === 'Present' ? 'text-green-400' : ''}
+          ${emp.status === 'Absent' ? 'text-red-400' : ''}
+          ${emp.status === 'Late' ? 'text-yellow-400' : ''}
+        ">
+          ${emp.status || "Not Marked"}
+        </td>
+
+        <td>${emp.time || "-"}</td>
+
+        <td>
+          ${isAdmin ? `
+            <button onclick="mark('Present', ${i})" class="bg-green-600 px-2 py-1 rounded">P</button>
+            <button onclick="mark('Absent', ${i})" class="bg-red-600 px-2 py-1 rounded">A</button>
+            <button onclick="mark('Late', ${i})" class="bg-yellow-500 px-2 py-1 rounded">L</button>
+          ` : `
+            <span class="text-gray-400">View Only</span>
+          `}
+        </td>
+
+      </tr>
+    `;
+  });
+}
+
+/* =========================
+   MARK ATTENDANCE
+========================= */
+
+function mark(status, i) {
+
+  if (!isAdmin) return;
+
+  let now = new Date().toLocaleTimeString();
+
+  employees[i].status = status;
+  employees[i].time = now;
+
+  save();
+  render();
+}
+
+/* =========================
+   INIT
+========================= */
+
+render();
+function updateProfile() {
+
+  let name = document.getElementById("adminName").value;
+  let file = document.getElementById("adminImage").files[0];
+
+  if (file) {
+    toBase64(file, (img) => {
+
+      system.superadmin.image = img;
+      if (name) system.superadmin.name = name;
+
+      /* 🔥 UPDATE CURRENT USER */
+      let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      currentUser.image = img;
+      if (name) currentUser.name = name;
+
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+      saveSystem();
+      alert("Profile updated!");
+    });
+  } else {
+
+    if (name) system.superadmin.name = name;
+
+    let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (name) currentUser.name = name;
+
+    localStorage.setItem("currentUser", JSON.stringify(currentUser));
+
+    saveSystem();
+    alert("Name updated!");
+  }
+}
+
+</script>
+
+</body>
+</html>

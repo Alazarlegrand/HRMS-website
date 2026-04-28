@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>About Us - NexaHR</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+body {
+  background:#0f172a;
+  color:white;
+  font-family: Arial;
+}
+
+.card {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.social-link {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border-radius:10px;
+  background: rgba(255,255,255,0.05);
+  transition: 0.3s;
+}
+
+.social-link:hover {
+  background: rgba(255,255,255,0.1);
+}
+</style>
+</head>
+
+<body class="flex">
+
+<!-- SIDEBAR -->
+<div class="w-64 h-screen bg-gray-900 p-5 space-y-3">
+  <h1 class="text-xl font-bold mb-5">⚡ NexaHR</h1>
+
+  <a href="dashboard.html">Dashboard</a><br>
+  <a href="employees.html">Employees</a><br>
+  <a href="attendance.html">Attendance</a><br>
+  <a href="payroll.html">Payroll</a><br>
+  <a href="about.html" class="text-blue-400">About Us</a>
+</div>
+
+<!-- MAIN -->
+<div class="flex-1 p-6">
+
+<h2 class="text-2xl font-bold mb-2">🏢 About Company</h2>
+<p id="roleInfo" class="text-gray-400 mb-4"></p>
+
+<!-- ================= ADMIN PANEL ================= -->
+<div id="adminPanel" class="card p-5 rounded-xl mb-6 hidden">
+
+  <h3 class="font-bold mb-3">Edit Company Info</h3>
+
+  <textarea id="aboutText" class="w-full p-3 bg-gray-800 rounded h-40"></textarea>
+
+  <button onclick="saveAbout()" class="bg-blue-600 px-4 py-2 mt-3 rounded">
+    Save About
+  </button>
+
+  <h3 class="font-bold mt-6 mb-2">Social Media Links</h3>
+
+  <input id="facebook" placeholder="Facebook" class="w-full p-2 bg-gray-800 mb-2 rounded">
+  <input id="instagram" placeholder="Instagram" class="w-full p-2 bg-gray-800 mb-2 rounded">
+  <input id="whatsapp" placeholder="WhatsApp" class="w-full p-2 bg-gray-800 mb-2 rounded">
+  <input id="linkedin" placeholder="LinkedIn" class="w-full p-2 bg-gray-800 mb-2 rounded">
+
+  <button onclick="saveSocials()" class="bg-green-600 px-4 py-2 mt-3 rounded w-full">
+    Save Links
+  </button>
+
+  <!-- MESSAGES -->
+  <div class="card p-4 rounded-xl mt-6">
+    <h3 class="font-bold mb-3">📩 User Messages</h3>
+    <div id="messagesBox"></div>
+  </div>
+
+</div>
+
+<!-- ================= USER PANEL ================= -->
+<div id="userPanel" class="hidden">
+
+  <div class="text-center mb-10">
+
+    <h1 class="text-3xl font-bold">Get in Touch</h1>
+    <p class="text-gray-400 mt-2">We’d like to hear from you!</p>
+
+    <p id="aboutDisplay" class="text-gray-300 mt-4 max-w-2xl mx-auto"></p>
+
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-10">
+
+    <!-- SOCIALS -->
+    <div>
+
+      <h3 class="text-xl font-bold mb-4">Social Links</h3>
+
+      <a id="fbLink" class="social-link text-blue-400" target="_blank">
+        <i class="fab fa-facebook"></i> Facebook
+      </a>
+
+      <a id="igLink" class="social-link text-pink-400" target="_blank">
+        <i class="fab fa-instagram"></i> Instagram
+      </a>
+
+      <a id="waLink" class="social-link text-green-400" target="_blank">
+        <i class="fab fa-whatsapp"></i> WhatsApp
+      </a>
+
+      <a id="liLink" class="social-link text-blue-300" target="_blank">
+        <i class="fab fa-linkedin"></i> LinkedIn
+      </a>
+
+    </div>
+
+    <!-- MESSAGE FORM -->
+    <div class="card p-5 rounded-xl">
+
+      <input placeholder="First Name" class="w-full p-2 bg-gray-800 mb-2 rounded">
+      <input placeholder="Last Name" class="w-full p-2 bg-gray-800 mb-2 rounded">
+      <input placeholder="Email" class="w-full p-2 bg-gray-800 mb-2 rounded">
+
+      <textarea placeholder="Message" class="w-full p-2 bg-gray-800 h-28 rounded"></textarea>
+
+      <button onclick="sendMessage()" class="bg-blue-600 px-4 py-2 mt-3 rounded w-full">
+        Send Message
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+</div>
+
+<script>
+
+/* ================= USER ================= */
+let user = JSON.parse(localStorage.getItem("currentUser"));
+
+if (!user) window.location.href = "index.html";
+
+const isAdmin = user.role === "admin" || user.role === "superadmin";
+
+document.getElementById("roleInfo").innerText =
+"Logged in as: " + user.role.toUpperCase();
+
+/* ================= DATA ================= */
+let aboutData = JSON.parse(localStorage.getItem("aboutData")) || {
+  text: "Welcome to NexaHR system.",
+  socials: {
+    facebook: "",
+    instagram: "",
+    whatsapp: "",
+    linkedin: ""
+  }
+};
+
+/* ================= INIT ================= */
+function init() {
+
+  if (isAdmin) {
+
+    document.getElementById("adminPanel").classList.remove("hidden");
+
+    document.getElementById("aboutText").value = aboutData.text;
+
+    document.getElementById("facebook").value = aboutData.socials.facebook;
+    document.getElementById("instagram").value = aboutData.socials.instagram;
+    document.getElementById("whatsapp").value = aboutData.socials.whatsapp;
+    document.getElementById("linkedin").value = aboutData.socials.linkedin;
+
+    loadMessages(); // FIXED
+
+  } else {
+
+    document.getElementById("userPanel").classList.remove("hidden");
+
+    document.getElementById("aboutDisplay").innerText = aboutData.text;
+
+    document.getElementById("fbLink").href = aboutData.socials.facebook || "#";
+    document.getElementById("igLink").href = aboutData.socials.instagram || "#";
+    document.getElementById("waLink").href = aboutData.socials.whatsapp || "#";
+    document.getElementById("liLink").href = aboutData.socials.linkedin || "#";
+  }
+}
+
+/* ================= SAVE ABOUT ================= */
+function saveAbout() {
+  aboutData.text = document.getElementById("aboutText").value;
+  localStorage.setItem("aboutData", JSON.stringify(aboutData));
+}
+
+/* ================= SAVE SOCIALS ================= */
+function saveSocials() {
+  aboutData.socials = {
+    facebook: document.getElementById("facebook").value,
+    instagram: document.getElementById("instagram").value,
+    whatsapp: document.getElementById("whatsapp").value,
+    linkedin: document.getElementById("linkedin").value
+  };
+
+  localStorage.setItem("aboutData", JSON.stringify(aboutData));
+}
+
+/* ================= SEND MESSAGE ================= */
+function sendMessage() {
+
+  let name = document.querySelector("input[placeholder='First Name']").value;
+  let email = document.querySelector("input[placeholder='Email']").value;
+  let message = document.querySelector("textarea[placeholder='Message']").value;
+
+  if (!name || !email || !message) {
+    alert("Fill all fields");
+    return;
+  }
+
+  let messages = JSON.parse(localStorage.getItem("messages")) || [];
+
+  messages.push({
+    name,
+    email,
+    text: message,
+    time: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("messages", JSON.stringify(messages));
+
+  alert("Message sent!");
+
+  loadMessages(); // FIXED
+}
+
+/* ================= LOAD MESSAGES ================= */
+function loadMessages() {
+
+  let box = document.getElementById("messagesBox");
+  if (!box) return;
+
+  let messages = JSON.parse(localStorage.getItem("messages")) || [];
+
+  box.innerHTML = "";
+
+  if (messages.length === 0) {
+    box.innerHTML = "<p class='text-gray-400'>No messages yet</p>";
+    return;
+  }
+
+  messages.forEach((m, i) => {
+
+    box.innerHTML += `
+      <div class="bg-gray-800 p-3 rounded mb-2">
+        <b>${m.name}</b> (${m.email})
+        <p>${m.text}</p>
+        <small>${m.time}</small>
+
+        <button onclick="deleteMessage(${i})"
+          class="bg-red-600 px-2 py-1 mt-2 rounded">
+          Delete
+        </button>
+      </div>
+    `;
+  });
+}
+
+/* ================= DELETE ================= */
+function deleteMessage(i) {
+
+  let messages = JSON.parse(localStorage.getItem("messages")) || [];
+
+  messages.splice(i, 1);
+
+  localStorage.setItem("messages", JSON.stringify(messages));
+
+  loadMessages();
+}
+
+/* ================= START ================= */
+init();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NexaHR Careers & Application System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  background: radial-gradient(circle at top, #1e293b, #020617);
+  color: white;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* cards */
+.card {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+/* inputs */
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(15,23,42,0.8);
+  border: 1px solid rgba(255,255,255,0.08);
+  outline: none;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59,130,246,0.3);
+}
+
+/* button */
+.btn {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
+</style>
+</head>
+
+<body class="p-6">
+
+<!-- HEADER -->
+<div class="text-center mb-10">
+  <h1 class="text-4xl font-bold">💼 NexaHR Careers Portal</h1>
+  <p class="text-gray-400 mt-2 max-w-2xl mx-auto">
+    Explore open positions created by the organization. Applications are managed centrally by HR.
+    Each job is structured by department, role, and company requirements defined by the Super Admin.
+  </p>
+</div>
+
+<!-- JOB LISTINGS -->
+<h2 class="text-2xl font-bold mb-4">📌 Available Positions</h2>
+
+<div id="jobContainer" class="grid md:grid-cols-3 gap-4"></div>
+
+<!-- JOB MODAL -->
+<div id="jobModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center">
+
+  <div class="card w-[650px] p-6">
+
+    <h2 id="jobTitle" class="text-2xl font-bold mb-1"></h2>
+    <p id="jobMeta" class="text-gray-400 mb-4 text-sm"></p>
+
+    <p class="text-gray-400 mb-4">
+      Complete the application form below. Your data will be reviewed by HR.
+    </p>
+
+    <div class="grid grid-cols-2 gap-3">
+
+      <input id="name" placeholder="Full Name">
+      <input id="email" placeholder="Email">
+
+      <input id="phone" placeholder="Phone">
+      <input id="experience" placeholder="Experience (years)">
+
+      <input id="education" placeholder="Education Level">
+      <input id="availability" placeholder="Availability Date">
+
+      <input id="linkedin" placeholder="LinkedIn URL">
+      <input id="github" placeholder="GitHub / Portfolio">
+
+      <input id="salary" placeholder="Expected Salary">
+
+      <select id="workType">
+        <option>Full Time</option>
+        <option>Part Time</option>
+        <option>Remote</option>
+        <option>Internship</option>
+      </select>
+
+    </div>
+
+    <textarea id="cover" placeholder="Cover Letter / Motivation"
+      class="mt-3"></textarea>
+
+    <input type="file" id="cv" class="mt-3">
+
+    <div class="flex gap-2 mt-4">
+
+      <button onclick="submitApp()" class="btn w-full">
+        Submit Application
+      </button>
+
+      <button onclick="closeJob()" class="bg-red-600 w-full rounded-xl">
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+let selectedJob = null;
+let structure = JSON.parse(localStorage.getItem("companyStructure")) || { departments: [] };
+
+/* =========================
+   BUILD JOBS FROM ADMIN DATA
+========================= */
+function loadJobs() {
+
+  let container = document.getElementById("jobContainer");
+  container.innerHTML = "";
+
+  if (!structure.departments.length) {
+    container.innerHTML = `
+      <p class="text-gray-400">No job positions available. Please ask admin to create departments.</p>
+    `;
+    return;
+  }
+
+  structure.departments.forEach(dept => {
+
+    (dept.positions || []).forEach(pos => {
+
+      let jobTitle = pos;
+
+      container.innerHTML += `
+        <div class="card p-4">
+
+          <h3 class="font-bold text-lg">${jobTitle}</h3>
+
+          <p class="text-gray-400 text-sm">
+            Department: ${dept.name}
+          </p>
+
+          <p class="mt-2 text-sm text-gray-300">
+            Professional opportunity in ${dept.name} department.
+          </p>
+
+          <button onclick="openJob('${jobTitle}', '${dept.name}')"
+            class="btn w-full mt-3">
+            View & Apply
+          </button>
+
+        </div>
+      `;
+    });
+  });
+}
+
+/* =========================
+   OPEN JOB
+========================= */
+function openJob(job, dept) {
+
+  selectedJob = job;
+
+  document.getElementById("jobTitle").innerText = job;
+  document.getElementById("jobMeta").innerText = "Department: " + dept;
+
+  document.getElementById("jobModal").classList.remove("hidden");
+}
+
+/* =========================
+   CLOSE MODAL
+========================= */
+function closeJob() {
+  document.getElementById("jobModal").classList.add("hidden");
+}
+
+/* =========================
+   SUBMIT APPLICATION
+========================= */
+function submitApp() {
+
+  let apps = JSON.parse(localStorage.getItem("applications")) || [];
+
+  let app = {
+    job: selectedJob,
+    name: document.getElementById("name").value,
+    email: document.getElementById("email").value,
+    phone: document.getElementById("phone").value,
+    experience: document.getElementById("experience").value,
+    education: document.getElementById("education").value,
+    availability: document.getElementById("availability").value,
+    linkedin: document.getElementById("linkedin").value,
+    github: document.getElementById("github").value,
+    salary: document.getElementById("salary").value,
+    workType: document.getElementById("workType").value,
+    cover: document.getElementById("cover").value,
+    status: "Pending",
+    date: new Date().toLocaleString()
+  };
+
+  if (!app.name || !app.email) {
+    alert("Please fill required fields");
+    return;
+  }
+
+  apps.push(app);
+  localStorage.setItem("applications", JSON.stringify(apps));
+
+  alert("Application submitted successfully!");
+  closeJob();
+}
+
+/* =========================
+   INIT
+========================= */
+loadJobs();
+
+</script>
+
+</body>
+</html>
